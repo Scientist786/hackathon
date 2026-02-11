@@ -8,7 +8,7 @@ class Tower(BaseModel):
     playerId: int = Field(..., description="Unique player identifier")
     hp: int = Field(..., ge=0, description="Health points")
     armor: int = Field(..., ge=0, description="Armor points")
-    resources: int = Field(..., ge=0, description="Available resources")
+    resources: int = Field(default=0, ge=0, description="Available resources")
     level: int = Field(..., ge=1, le=6, description="Tower level")
 
 

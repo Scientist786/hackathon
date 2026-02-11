@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     aws_secret_access_key: Optional[str] = None
     
     # AI Model settings
-    primary_model_id: str = "anthropic.claude-3-5-sonnet-20241022-v2:0"
+    primary_model_id: str = "anthropic.claude-3-5-sonnet-20240620-v1:0"
     fallback_model_id: str = "anthropic.claude-3-haiku-20240307-v1:0"
     
     # Bot metadata

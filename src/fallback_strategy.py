@@ -147,28 +147,28 @@ class FallbackStrategy:
         enemies: List[Tower],
         resources: int
     ) -> List[CombatAction]:
-        """Early game strategy: Focus on upgrades and growth."""
+        """Early game strategy: Focus on upgrades and defense."""
         actions = []
         remaining = resources
         
-        # Survival check: Build armor if HP is low
-        if player.hp < 60 and remaining >= 20:
-            armor_amount = min(30, remaining)
+        # Priority 1: Build armor if HP is low
+        if player.hp < 70 and remaining >= 20:
+            armor_amount = min(50, remaining)
             actions.append(ArmorAction(type="armor", amount=armor_amount))
             remaining -= armor_amount
         
-        # Upgrade priority: Upgrade if we can afford it and level < 4
-        if player.level < 4:
+        # Priority 2: Upgrade as much as possible
+        if player.level < 5:
             upgrade_cost = ActionValidator.calculate_upgrade_cost(player.level)
             if remaining >= upgrade_cost:
                 actions.append(UpgradeAction(type="upgrade"))
                 remaining -= upgrade_cost
         
-        # Light attack on weakest with remaining resources
-        if remaining >= 10:
+        # Priority 3: Minimal attacks (10-20% of remaining resources)
+        if remaining >= 20:
             weakest = TargetSelector.find_weakest_tower(enemies)
             if weakest:
-                attack_amount = min(remaining // 2, 30)  # Use half resources, max 30
+                attack_amount = min(remaining // 5, 20)  # Use 20% resources, max 20
                 if attack_amount > 0:
                     actions.append(AttackAction(
                         type="attack",
@@ -184,29 +184,28 @@ class FallbackStrategy:
         enemies: List[Tower],
         resources: int
     ) -> List[CombatAction]:
-        """Mid game strategy: Balance growth and elimination."""
+        """Mid game strategy: Continue upgrades and maintain strong defense."""
         actions = []
         remaining = resources
         
-        # Survival check: Build armor if HP < 50
-        if player.hp < 50 and remaining >= 20:
-            armor_amount = min(40, remaining)
+        # Priority 1: Maintain armor buffer
+        if player.hp < 60 and remaining >= 30:
+            armor_amount = min(60, remaining)
             actions.append(ArmorAction(type="armor", amount=armor_amount))
             remaining -= armor_amount
         
-        # Upgrade to level 4 if possible
-        if player.level < 4:
+        # Priority 2: Upgrade to max level
+        if player.level < 5:
             upgrade_cost = ActionValidator.calculate_upgrade_cost(player.level)
             if remaining >= upgrade_cost:
                 actions.append(UpgradeAction(type="upgrade"))
                 remaining -= upgrade_cost
         
-        # Focus attack on weakest opponent
-        if remaining >= 20:
+        # Priority 3: Light attacks (20-30% of remaining)
+        if remaining >= 30:
             weakest = TargetSelector.find_weakest_tower(enemies)
             if weakest:
-                # Use 60% of remaining resources for attack
-                attack_amount = int(remaining * 0.6)
+                attack_amount = int(remaining * 0.25)  # Use 25% of remaining
                 if attack_amount > 0:
                     actions.append(AttackAction(
                         type="attack",
@@ -223,36 +222,43 @@ class FallbackStrategy:
         resources: int,
         turn: int
     ) -> List[CombatAction]:
-        """Late game strategy: Aggressive elimination before fatigue kills everyone."""
+        """Late game strategy: Survive fatigue with strong defense, let fatigue kill opponents."""
         actions = []
         remaining = resources
         
-        # Minimal armor: Only if HP is critically low
-        if player.hp < 30 and remaining >= 15:
-            armor_amount = min(25, remaining)
+        # Calculate fatigue damage
+        fatigue_damage = FatigueCalculator.calculate_fatigue_damage(turn)
+        next_fatigue = FatigueCalculator.calculate_fatigue_damage(turn + 1)
+        
+        # Priority 1: Build armor to survive fatigue
+        # Build enough armor to survive next 2-3 turns of fatigue
+        armor_needed = (fatigue_damage + next_fatigue) - player.armor
+        if armor_needed > 0 and remaining >= armor_needed:
+            armor_amount = min(armor_needed + 20, remaining)  # Extra buffer
+            actions.append(ArmorAction(type="armor", amount=armor_amount))
+            remaining -= armor_amount
+        elif player.hp < 50 and remaining >= 30:
+            # Build armor if HP is getting low
+            armor_amount = min(50, remaining)
             actions.append(ArmorAction(type="armor", amount=armor_amount))
             remaining -= armor_amount
         
-        # NO UPGRADES in late game - no time for ROI
-        
-        # Aggressive attacks: Use 80% of remaining resources
-        if remaining >= 10:
-            # Find weakest opponent to eliminate
+        # Priority 2: Light attacks only if we have excess resources
+        if remaining >= 50:
             weakest = TargetSelector.find_weakest_tower(enemies)
             if weakest:
-                # Calculate if we can eliminate them
+                # Only attack if opponent is very weak and we can eliminate them
                 effective_hp = TargetSelector.calculate_effective_hp(weakest)
-                
-                if remaining >= effective_hp:
-                    # We can eliminate them! Do it!
+                if effective_hp < 50 and remaining >= effective_hp:
+                    # Finish them off
                     actions.append(AttackAction(
                         type="attack",
                         targetId=weakest.playerId,
-                        troopCount=effective_hp + 5  # Extra to ensure kill
+                        troopCount=effective_hp + 5
                     ))
                 else:
-                    # Can't eliminate, but attack with 80% of resources
-                    attack_amount = int(remaining * 0.8)
+                    # Light attack with 20% of remaining
+                    attack_amount = int(remaining * 0.2)
                     if attack_amount > 0:
                         actions.append(AttackAction(
                             type="attack",

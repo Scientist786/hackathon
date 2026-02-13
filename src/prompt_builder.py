@@ -215,29 +215,29 @@ STRATEGIC GUIDANCE FOR {game_phase.upper()} GAME:
         
         if game_phase == "early":
             prompt += """
-EARLY GAME (Turns 1-10): RESOURCE GROWTH
-- Priority: Upgrade to level 3-4 as fast as possible
-- Build armor only if HP < 60
-- Light attacks on weakest opponent to slow their growth
-- Save resources for upgrades
+EARLY GAME (Turns 1-10): UPGRADE & DEFEND
+- Priority 1: Upgrade to level 5 as fast as possible (massive resource generation)
+- Priority 2: Build armor if HP < 70
+- Priority 3: Minimal attacks (10-20% of resources) - just to show presence
+- Strategy: Turtle up, grow strong, let fatigue kill opponents later
 """
         elif game_phase == "mid":
             prompt += """
-MID GAME (Turns 11-24): DOMINANCE
-- Upgrade to level 4 if possible
-- Focus attacks on weakest opponent until eliminated
-- Build armor to maintain HP > 50
-- Balance resource generation and attacks
+MID GAME (Turns 11-24): CONTINUE GROWTH & DEFENSE
+- Priority 1: Reach level 5 (101 resources/turn!)
+- Priority 2: Maintain strong armor buffer (60+)
+- Priority 3: Light attacks (20-30% of resources) on weakest
+- Strategy: Stay defensive, keep upgrading, survive to fatigue
 """
         else:  # late game
             prompt += """
-LATE GAME (Turns 25+): SURVIVAL & ELIMINATION
-- ⚠️ CRITICAL: Fatigue is active - aggressive strategy required!
-- Spend 70-80% of resources on attacks
-- Focus fire on single weakest opponent to eliminate them
-- Minimal armor (only if HP < 30)
-- NO UPGRADES - no time for ROI
-- Goal: Eliminate all opponents before fatigue kills everyone
+LATE GAME (Turns 25+): SURVIVE FATIGUE
+- ⚠️ CRITICAL: Fatigue is active - defensive strategy required!
+- Priority 1: Build armor to survive fatigue (need armor = fatigue damage × 2-3)
+- Priority 2: Light attacks (20% resources) only if excess resources
+- Priority 3: Finish off very weak opponents (effective HP < 50) if possible
+- Strategy: SURVIVE - let fatigue kill opponents, you outlast them with armor
+- Goal: Be the last tower standing by surviving fatigue, not by attacking
 """
         
         prompt += f"""
